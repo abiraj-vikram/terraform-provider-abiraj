@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "hashicorp.com/provider/abiraj",
+		Address: "hashicorp/local/securden",
 		Debug:   debug,
 	}
 

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var _ provider.Provider = &securdenProvider{}
@@ -19,47 +18,49 @@ type securdenProvider struct {
 	version string
 }
 
-var AccountID string
-var ServerURL string
-var Authtoken string
+var SecurdenAuthToken string
+var SecurdenServerURL string
+var SecurdenOrg string
+var SecurdenCertificate string
+var PluginVersion string
 
 type securdenProviderModel struct {
-	AccountID types.String `tfsdk:"account_id"`
-	ServerURL types.String `tfsdk:"server_url"`
-	Authtoken types.String `tfsdk:"authtoken"`
+	ServerURL   types.String `tfsdk:"server_url"`
+	AuthToken   types.String `tfsdk:"authtoken"`
+	Certificate types.String `tfsdk:"certificate"`
 }
 
 func (p *securdenProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "abiraj"
+	resp.TypeName = "securden"
 	resp.Version = p.version
 }
 
 func (p *securdenProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"account_id": schema.StringAttribute{
-				Required:  true,
-				Sensitive: true,
+			"server_url": schema.StringAttribute{
+				Required: true,
 			},
 			"authtoken": schema.StringAttribute{
 				Required:  true,
 				Sensitive: true,
 			},
-			"server_url": schema.StringAttribute{
-				Required: true,
+			"certificate": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "Securden Server SSL Certificate",
 			},
 		},
 	}
 }
 
 func (p *securdenProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	tflog.Info(ctx, "Configuring abiraj client")
 	var config securdenProviderModel
 	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
-	AccountID = config.AccountID.ValueString()
-	ServerURL = config.ServerURL.ValueString()
-	Authtoken = config.Authtoken.ValueString()
+	SecurdenServerURL = config.ServerURL.ValueString()
+	SecurdenCertificate = config.Certificate.ValueString()
+	SecurdenAuthToken = config.AuthToken.ValueString()
+	PluginVersion = p.version
 }
 
 func (p *securdenProvider) Resources(_ context.Context) []func() resource.Resource {
@@ -68,7 +69,12 @@ func (p *securdenProvider) Resources(_ context.Context) []func() resource.Resour
 
 func (p *securdenProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		account_data_source,
+		account,
+		accounts,
+		accounts_passwords,
+		add_account,
+		edit_account,
+		delete_accounts,
 	}
 }
 
