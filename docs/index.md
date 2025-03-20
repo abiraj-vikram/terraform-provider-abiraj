@@ -14,17 +14,18 @@ This guide will take you through the process of setting up and using Securden PA
 
 ## Summary of Steps
 
-1. Configuration in Securden  
-2. Defining the Securden Provider Block  
-3. Checking with Data Block
-4. Configuring the Output Block
-5. Accessing Data
-6. Adding Additional Fields  
-7. Available Data Fields in the Plugin  
+1. Adding Securden to Terraform
+2. Configuration
+3. Fetch Account Data
+4. Accessing Account Data
+5. Accessing Additional Fields  
+6. List of Account Attributes
+7. Fetch Multiple Accounts Password
+
 
 ---
 
-## Adding Securden Provider
+## 1. Adding Securden Provider
 - **Terraform**
   ```sh
   terraform {
@@ -41,9 +42,25 @@ This guide will take you through the process of setting up and using Securden PA
   }
   ```
 
-## 1. Configuration to be Done in Terraform
+## 2. Configuration
 
 ### a. Environment Variables Required
+
+#### i. Terraform Variables
+- **Terraform (vars.tf)**
+  ```sh
+  variable "server_url" {
+    type    = string
+    default = "<securden-host-url>"
+  }
+
+  variable "authtoken" {
+    type    = string
+    default = "<securden-api-authentication-token>"
+  }
+  ```
+
+#### ii. Also can set value in terminal as environment variable
 Define two variables to store Securden API authentication token and Server URL.
 
 Initialize these variables with the correct values for your environment. For example:
@@ -59,29 +76,9 @@ Initialize these variables with the correct values for your environment. For exa
   export TF_VAR_authtoken=<authtoken>
   export TF_VAR_server_url=<securden-host-url>
   ```
-
-### b. Rather can use terraform variables though
-- **Terraform (vars.tf)**
-  ```sh
-  variable "server_url" {
-    type    = string
-    default = "<securden-host-url>"
-  }
-
-  variable "authtoken" {
-    type    = string
-    default = "<securden-api-authentication-token>"
-  }
-
-  #Optional
-  variable "certificate" {
-    type    = string
-    default = "</path/to/certificate>"
-  }
-  ```
 ---
 
-### c. Initializing Securden with Provider Block
+### b. Initializing Securden with Provider Block
 Define the Securden provider block, referencing the previously declared variables:
 
 ```hcl
@@ -93,7 +90,7 @@ provider "securden" {
 
 ---
 
-## 2. Fetching Account by Data Block
+## 3. Fetching Account with Data Block
 To fetch account data from Securden, use a data block. Here’s an example to fetch SSH key credentials:
 
 ```hcl
@@ -132,7 +129,7 @@ data "securden_keyvalue" "ssh" {
 
 ---
 
-## 6. Available Account Attributes
+## 6. Account Attributes
 Here is a list of the account attributes that can be retrieved for use in Terraform using the Securden plugin:
 
 - `account_id`
@@ -160,7 +157,7 @@ Here is a list of the account attributes that can be retrieved for use in Terraf
 
 ---
 
-## Bulk Password Retrieval
+## 7. Fetching Multiple Accounts Password
 You have the option to fetch account passwords in bulk from Securden at once using a data block.
 
 The major difference between `securden_account` and `securden_passwords` commands is that:
@@ -170,10 +167,12 @@ The major difference between `securden_account` and `securden_passwords` command
 Here’s an example of a data block used to fetch multiple account passwords:
 
 ```hcl
-data "securden_passwords" "passwords" {}
+data "securden_passwords" "passwords" {
+  account_ids = [<list-of_account-ids>]
+}
 ```
 
-Accounts whose passwords need to be retrieved can be called by their respective account IDs:
+Accounts which passwords need to be retrieved can be called by their respective account IDs:
 
 ```hcl
 data.securden_passwords.passwords["2000000002800"]
