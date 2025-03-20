@@ -40,7 +40,7 @@ func (p *securdenProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 		Attributes: map[string]schema.Attribute{
 			"server_url": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "Securden Server URL. Example: https://company.securden.com:5959",
+				MarkdownDescription: "Securden Server URL. Example: https://example.securden.com:5959",
 			},
 			"authtoken": schema.StringAttribute{
 				Required:            true,
@@ -85,7 +85,6 @@ func (p *securdenProvider) DataSources(_ context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		account,
 		accounts,
-		accounts_passwords,
 		add_account,
 		edit_account,
 		delete_accounts,

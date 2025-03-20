@@ -318,7 +318,7 @@ func raise_request(params map[string]any, apiURL string, method string) ([]byte,
 	return body, nil
 }
 
-func get_account_dynamic(ctx context.Context, account_id, account_name, account_title, account_type, key_field string) (AccountModel, int, string) {
+func get_account(ctx context.Context, account_id, account_name, account_title, account_type, key_field string) (AccountModel, int, string) {
 	var account AccountModel
 	params := make(map[string]any)
 	setParam(params, "account_id", types.StringValue(account_id))
@@ -375,74 +375,6 @@ func get_account_dynamic(ctx context.Context, account_id, account_name, account_
 	return account, int(statusCode), "Success"
 }
 
-func get_account(ctx context.Context, account_id, account_name, account_title, key_field string) (AccountModel, int, string) {
-	var account AccountModel
-	params := make(map[string]any)
-	setParam(params, "account_id", types.StringValue(account_id))
-	setParam(params, "account_name", types.StringValue(account_name))
-	setParam(params, "account_title", types.StringValue(account_title))
-	setParam(params, "key_field", types.StringValue(key_field))
-
-	var Response struct {
-		AccountID         int64  `json:"account_id"`
-		AccountName       string `json:"account_name"`
-		AccountTitle      string `json:"account_title"`
-		Password          string `json:"password"`
-		KeyValue          string `json:"key_value"`
-		PrivateKey        string `json:"private_key"`
-		PuTTYPrivateKey   string `json:"putty_private_key"`
-		Passphrase        string `json:"passphrase"`
-		PPKPassphrase     string `json:"ppk_passphrase"`
-		Address           string `json:"address"`
-		ClientID          string `json:"client_id"`
-		ClientSecret      string `json:"client_secret"`
-		AccountAlias      string `json:"account_alias"`
-		AccountFile       string `json:"account_file"`
-		OracleSID         string `json:"oracle_sid"`
-		OracleServiceName string `json:"oracle_service_name"`
-		DefaultDatabase   string `json:"default_database"`
-		Port              string `json:"port"`
-		StatusCode        int    `json:"status_code"`
-		Message           string `json:"message"`
-		Error             struct {
-			Code    int    `json:"code"`
-			Message string `json:"message"`
-		} `json:"error"`
-	}
-
-	body, err := get_request(params, "/api/get_account_details_dict")
-
-	if err != nil {
-		return account, 500, fmt.Sprintf("Error in API call: %v", err)
-	}
-	json.Unmarshal(body, &Response)
-	if Response.StatusCode != 200 {
-		if Response.Error.Message != "" {
-			return account, Response.StatusCode, Response.Error.Message
-		}
-		return account, Response.StatusCode, Response.Message
-	}
-	account.AccountID = types.Int64Value(Response.AccountID)
-	account.AccountName = types.StringValue(Response.AccountName)
-	account.AccountTitle = types.StringValue(Response.AccountTitle)
-	account.Password = types.StringValue(Response.Password)
-	account.KeyValue = types.StringValue(Response.KeyValue)
-	account.PrivateKey = types.StringValue(Response.PrivateKey)
-	account.PuTTYPrivateKey = types.StringValue(Response.PuTTYPrivateKey)
-	account.Passphrase = types.StringValue(Response.Passphrase)
-	account.PPKPassphrase = types.StringValue(Response.PPKPassphrase)
-	account.Address = types.StringValue(Response.Address)
-	account.ClientID = types.StringValue(Response.ClientID)
-	account.ClientSecret = types.StringValue(Response.ClientSecret)
-	account.AccountAlias = types.StringValue(Response.AccountAlias)
-	account.AccountFile = types.StringValue(Response.AccountFile)
-	account.OracleSID = types.StringValue(Response.OracleSID)
-	account.OracleServiceName = types.StringValue(Response.OracleServiceName)
-	account.DefaultDatabase = types.StringValue(Response.DefaultDatabase)
-	account.Port = types.StringValue(Response.Port)
-	return account, Response.StatusCode, Response.Message
-}
-
 func get_accounts(ctx context.Context, params map[string]any) (map[string]map[string]string, int, string) {
 	var accounts_data = make(map[string]any)
 	var null map[string]map[string]string
@@ -478,61 +410,6 @@ func get_accounts(ctx context.Context, params map[string]any) (map[string]map[st
 	}
 
 	return processedAccounts, 200, "Success"
-}
-
-func get_passwords(ctx context.Context, accountIDs []string) (types.Map, int, string) {
-	var accountIDsInt64 []int64
-	for _, id := range accountIDs {
-		accountID, err := strconv.ParseInt(id, 10, 64)
-		if err != nil {
-			return types.Map{}, 400, fmt.Sprintf("Invalid account ID format: %v", err)
-		}
-		accountIDsInt64 = append(accountIDsInt64, accountID)
-	}
-
-	params := map[string]interface{}{
-		"account_ids": accountIDsInt64,
-	}
-
-	body, err := raise_request(params, "/api/get_multiple_accounts_passwords", "POST")
-	if err != nil {
-		return types.Map{}, 500, fmt.Sprintf("Error in API call: %v", err)
-	}
-
-	var response struct {
-		Passwords  map[string]string `json:"passwords"`
-		StatusCode int               `json:"status_code"`
-		Message    string            `json:"message"`
-		Error      struct {
-			Code    interface{} `json:"code"`
-			Message string      `json:"message"`
-		} `json:"error"`
-	}
-
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return types.Map{}, 500, fmt.Sprintf("Failed to parse response: %v", err)
-	}
-
-	if response.StatusCode != 200 {
-		errorMessage := response.Message
-		if response.Error.Message != "" {
-			errorMessage = response.Error.Message
-		}
-		return types.Map{}, response.StatusCode, errorMessage
-	}
-
-	passwordsMap := make(map[string]attr.Value, len(response.Passwords))
-	for k, v := range response.Passwords {
-		passwordsMap[k] = types.StringValue(v)
-	}
-
-	passwords, diags := types.MapValue(types.StringType, passwordsMap)
-	if diags.HasError() {
-		return types.Map{}, 500, fmt.Sprintf("Error setting map value: %v", diags)
-	}
-
-	return passwords, response.StatusCode, "Success"
 }
 
 func add_account_function(ctx context.Context, params map[string]any) (AddAccountModel, int, string) {

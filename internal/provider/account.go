@@ -74,61 +74,9 @@ func (d *Account) Schema(ctx context.Context, req datasource.SchemaRequest, resp
 				Computed:            true,
 			},
 			"account": schema.MapAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-			},
-			"password": schema.StringAttribute{
-				MarkdownDescription: "Password of the account",
+				ElementType:         types.StringType,
 				Computed:            true,
-			},
-			"key_field": schema.StringAttribute{
-				MarkdownDescription: "Key field for the required field",
-				Optional:            true,
-			},
-			"key_value": schema.StringAttribute{
-				MarkdownDescription: "Key value of the required field",
-				Computed:            true,
-			},
-			"private_key": schema.StringAttribute{
-				Computed: true,
-			},
-			"putty_private_key": schema.StringAttribute{
-				Computed: true,
-			},
-			"passphrase": schema.StringAttribute{
-				MarkdownDescription: "Passphrase for Private Key",
-				Computed:            true,
-			},
-			"ppk_passphrase": schema.StringAttribute{
-				MarkdownDescription: "Passphrase for PuTTY Private Key",
-				Computed:            true,
-			},
-			"address": schema.StringAttribute{
-				Computed: true,
-			},
-			"client_id": schema.StringAttribute{
-				Computed: true,
-			},
-			"client_secret": schema.StringAttribute{
-				Computed: true,
-			},
-			"account_alias": schema.StringAttribute{
-				Computed: true,
-			},
-			"account_file": schema.StringAttribute{
-				Computed: true,
-			},
-			"oracle_sid": schema.StringAttribute{
-				Computed: true,
-			},
-			"oracle_service_name": schema.StringAttribute{
-				Computed: true,
-			},
-			"default_database": schema.StringAttribute{
-				Computed: true,
-			},
-			"port": schema.StringAttribute{
-				Computed: true,
+				MarkdownDescription: "Account data with key-value pairs",
 			},
 		},
 	}
@@ -160,11 +108,7 @@ func (d *Account) Create(ctx context.Context, req datasource.ReadRequest, resp *
 	var data AccountModel
 	var code int
 	var message string
-	if PluginVersion == "1.0.0" {
-		data, code, message = get_account(ctx, account_id, account_name, account_title, account_field)
-	} else {
-		data, code, message = get_account_dynamic(ctx, account_id, account_name, account_title, account_type, account_field)
-	}
+	data, code, message = get_account(ctx, account_id, account_name, account_title, account_type, account_field)
 	if code != 200 {
 		resp.Diagnostics.AddWarning(fmt.Sprintf("%d - %s", code, message), "")
 		return
@@ -183,11 +127,7 @@ func (d *Account) Read(ctx context.Context, req datasource.ReadRequest, resp *da
 	var data AccountModel
 	var code int
 	var message string
-	if PluginVersion == "1.0.0" {
-		data, code, message = get_account(ctx, account_id, account_name, account_title, account_field)
-	} else {
-		data, code, message = get_account_dynamic(ctx, account_id, account_name, account_title, account_type, account_field)
-	}
+	data, code, message = get_account(ctx, account_id, account_name, account_title, account_type, account_field)
 	if code != 200 {
 		resp.Diagnostics.AddWarning(fmt.Sprintf("%d - %s", code, message), "")
 		return

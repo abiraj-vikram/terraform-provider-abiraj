@@ -17,14 +17,14 @@ Securden data source
 
 ### Required
 
-- `account_ids` (List of Number) Title of the account
+- `account_ids` (List of Number) Account IDs to be deleted
 
 ### Optional
 
-- `delete_permanently` (Boolean) Personal account flag (Boolean)
-- `reason` (String) Name of the account
+- `delete_permanently` (Boolean) Account will be deleted permanently
+- `reason` (String) Reason for the account deletetion
 
 ### Read-Only
 
-- `deleted_accounts` (List of Number)
+- `deleted_accounts` (List of Number) Deleted account IDs
 - `message` (String) Response Message

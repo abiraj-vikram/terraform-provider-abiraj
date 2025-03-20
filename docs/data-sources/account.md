@@ -21,23 +21,7 @@ Securden data source
 - `account_name` (String) Name of the account
 - `account_title` (String) Title of the account
 - `account_type` (String) Type of the account
-- `key_field` (String) Key field for the required field
 
 ### Read-Only
 
-- `account` (Map of String)
-- `account_alias` (String)
-- `account_file` (String)
-- `address` (String)
-- `client_id` (String)
-- `client_secret` (String)
-- `default_database` (String)
-- `key_value` (String) Key value of the required field
-- `oracle_service_name` (String)
-- `oracle_sid` (String)
-- `passphrase` (String) Passphrase for Private Key
-- `password` (String) Password of the account
-- `port` (String)
-- `ppk_passphrase` (String) Passphrase for PuTTY Private Key
-- `private_key` (String)
-- `putty_private_key` (String)
+- `account` (Map of String) Account data with key-value pairs

@@ -23,17 +23,17 @@ Securden data source
 ### Optional
 
 - `account_alias` (String) Required for AWS IAM accounts
-- `account_expiration_date` (String) Expiration date of the account (Date Format - DD/MM/YYYY)
+- `account_expiration_date` (String) Expiration date for the account (Date Format - DD/MM/YYYY)
 - `account_name` (String) Name of the account
 - `account_title` (String) Title of the account
 - `distinguished_name` (String) Required for LDAP domain accounts
-- `domain_name` (String) Required for Google Workspace accounts
-- `folder_id` (Number) Folder ID in which the account to be added (Long Integer)
+- `domain_name` (String) Required for AD and Google Workspace accounts
+- `folder_id` (Number) Folder ID of the account belongs to be
 - `ipaddress` (String) IP Address of the account
-- `notes` (String) Notes of the account
-- `overwrite_additional_fields` (Boolean) Overwrite additional fields (Boolean)
-- `personal_account` (Boolean) Personal account flag (Boolean)
-- `tags` (String) Tags of the account
+- `notes` (String) Account notes
+- `overwrite_additional_fields` (Boolean) Overwrite additional fields
+- `personal_account` (Boolean) Personal account
+- `tags` (String) Tags for the Account
 
 ### Read-Only
 

@@ -36,13 +36,13 @@ func (d *Accounts) Schema(ctx context.Context, req datasource.SchemaRequest, res
 		Attributes: map[string]schema.Attribute{
 			"account_ids": schema.ListAttribute{
 				ElementType:         types.Int64Type,
-				MarkdownDescription: "Title of the account",
+				MarkdownDescription: "IDs of account to be fetched",
 				Required:            true,
 			},
 			"accounts": schema.MapAttribute{
 				ElementType:         types.MapType{ElemType: types.StringType},
 				Computed:            true,
-				MarkdownDescription: "Multiple account data",
+				MarkdownDescription: "Multiple accounts data with account ID as key and value will be key-value pairs of account data",
 			},
 		},
 	}

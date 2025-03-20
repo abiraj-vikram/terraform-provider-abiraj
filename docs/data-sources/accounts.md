@@ -17,8 +17,8 @@ Securden data source
 
 ### Required
 
-- `account_ids` (List of Number) Title of the account
+- `account_ids` (List of Number) IDs of account to be fetched
 
 ### Read-Only
 
-- `accounts` (Map of Map of String) Multiple account data
+- `accounts` (Map of Map of String) Multiple accounts data with account ID as key and value will be key-value pairs of account data

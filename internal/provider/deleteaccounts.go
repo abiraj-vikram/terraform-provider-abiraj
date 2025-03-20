@@ -39,15 +39,15 @@ func (d *DeleteAccounts) Schema(ctx context.Context, req datasource.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"account_ids": schema.ListAttribute{
 				ElementType:         types.Int64Type,
-				MarkdownDescription: "Title of the account",
+				MarkdownDescription: "Account IDs to be deleted",
 				Required:            true,
 			},
 			"reason": schema.StringAttribute{
-				MarkdownDescription: "Name of the account",
+				MarkdownDescription: "Reason for the account deletetion",
 				Optional:            true,
 			},
 			"delete_permanently": schema.BoolAttribute{
-				MarkdownDescription: "Personal account flag (Boolean)",
+				MarkdownDescription: "Account will be deleted permanently",
 				Optional:            true,
 			},
 			"message": schema.StringAttribute{
@@ -55,8 +55,9 @@ func (d *DeleteAccounts) Schema(ctx context.Context, req datasource.SchemaReques
 				Computed:            true,
 			},
 			"deleted_accounts": schema.ListAttribute{
-				ElementType: types.Int64Type,
-				Computed:    true,
+				ElementType:         types.Int64Type,
+				Computed:            true,
+				MarkdownDescription: "Deleted account IDs",
 			},
 		},
 	}
