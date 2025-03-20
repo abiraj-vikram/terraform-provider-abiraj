@@ -39,11 +39,13 @@ func (p *securdenProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"server_url": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "Securden Server URL. Example: https://company.securden.com:5959",
 			},
 			"authtoken": schema.StringAttribute{
-				Required:  true,
-				Sensitive: true,
+				Required:            true,
+				Sensitive:           true,
+				MarkdownDescription: "Securden API Authentication Token",
 			},
 			"certificate": schema.StringAttribute{
 				Optional:            true,
@@ -58,7 +60,19 @@ func (p *securdenProvider) Configure(ctx context.Context, req provider.Configure
 	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
 	SecurdenServerURL = config.ServerURL.ValueString()
+	isValidURL := isValidURL(SecurdenServerURL)
+	if !isValidURL {
+		resp.Diagnostics.AddError("Invalid Server URL", "The provided server URL is not valid.")
+		return
+	}
 	SecurdenCertificate = config.Certificate.ValueString()
+	if SecurdenCertificate != "" {
+		validCertificate := isValidPEMFile(SecurdenCertificate)
+		if !validCertificate {
+			resp.Diagnostics.AddError("Invalid Certificate", "The provided certificate is not valid or file not exists.")
+			return
+		}
+	}
 	SecurdenAuthToken = config.AuthToken.ValueString()
 	PluginVersion = p.version
 }

@@ -11,14 +11,95 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+func logger(data interface{}) error {
+
+	strData := fmt.Sprintf("%v", data)
+
+	file, err := os.OpenFile("log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("error opening file: %w", err)
+	}
+	defer file.Close()
+
+	if _, err := file.WriteString(strData + "\n"); err != nil {
+		return fmt.Errorf("error writing to file: %w", err)
+	}
+
+	return nil
+}
+
+func isValidURL(input string) bool {
+	parsedURL, err := url.Parse(input)
+	if err != nil || parsedURL.Scheme != "https" || parsedURL.Host == "" {
+		return false
+	}
+
+	if strings.HasSuffix(parsedURL.Path, "/") {
+		return false
+	}
+
+	host, portStr, found := strings.Cut(parsedURL.Host, ":")
+	if !found || host == "" || portStr == "" {
+		return false
+	}
+
+	port, err := strconv.Atoi(portStr)
+	if err != nil || port < 1 || port > 65535 {
+		return false
+	}
+
+	hostnameRegex := `^(localhost|([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})$`
+	matched, _ := regexp.MatchString(hostnameRegex, host)
+	return matched
+}
+
+func isValidPEMFile(filePath string) bool {
+	if filePath == "" || strings.ToLower(filePath) == "none" {
+		return false
+	}
+
+	info, err := os.Stat(filePath)
+	if err != nil || info.IsDir() {
+		return false
+	}
+
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return false
+	}
+
+	block, _ := pem.Decode(data)
+	if block == nil {
+		return false
+	}
+
+	_, err = x509.ParseCertificate(block.Bytes)
+	return err == nil
+}
+
+func main() {
+	testPaths := []string{
+		"/path/to/valid-cert.pem",
+		"/invalid/path.pem",
+		"none",
+		"",
+	}
+
+	for _, path := range testPaths {
+		fmt.Printf("%s -> %v\n", path, isValidPEMFile(path))
+	}
+}
 
 func setParam(params map[string]any, key string, value attr.Value) {
 	if !value.IsNull() && !value.IsUnknown() {
@@ -81,20 +162,17 @@ func fetchSSLCertificate(serverURL string) (*x509.Certificate, error) {
 
 	host := parsedURL.Host
 	if parsedURL.Port() == "" {
-		// Default HTTPS port if none is provided
 		host += ":443"
 	}
 
-	// Dial the server using TLS
 	conn, err := tls.Dial("tcp", host, &tls.Config{
-		InsecureSkipVerify: true, // Just fetching the cert
+		InsecureSkipVerify: true,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect: %v", err)
 	}
 	defer conn.Close()
 
-	// Retrieve certificates
 	certs := conn.ConnectionState().PeerCertificates
 	if len(certs) == 0 {
 		return nil, fmt.Errorf("no certificates found")
@@ -103,7 +181,6 @@ func fetchSSLCertificate(serverURL string) (*x509.Certificate, error) {
 	return certs[0], nil
 }
 
-// Function to create an HTTP client with the fetched certificate
 func createSecureClient(cert *x509.Certificate) *http.Client {
 	certPool := x509.NewCertPool()
 	certPool.AddCert(cert)
@@ -124,7 +201,7 @@ func createSecureClient(cert *x509.Certificate) *http.Client {
 
 func createInsecureClient() *http.Client {
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true, // Disable SSL verification
+		InsecureSkipVerify: true,
 	}
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
