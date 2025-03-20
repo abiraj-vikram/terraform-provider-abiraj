@@ -162,3 +162,4 @@ To retrieve the password of a specific account:
 output "password" {
   value = data.securden_passwords.passwords["2000000002800"]
 }
+```
