@@ -6,7 +6,7 @@ description: |-
   
 ---
 
-# Securden Provider
+# Securden Test Provider
 
 This guide will take you through the process of setting up and using Securden PAM as a provider block in Terraform to securely retrieve account credentials, keys, and secrets using APIs.
 
