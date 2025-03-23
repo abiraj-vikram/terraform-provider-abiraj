@@ -1,190 +1,148 @@
-# Securden Terraform Provider
+# Securden - Terraform Integration
 
-The `securden` provider allows Terraform to interact with Securden's API, enabling you to retrieve account details such as passwords and ports based on an `account_id`, or a combination of `account_name` and `account_title`.
+This guide will take you through the process of setting up and using Securden PAM as a provider block in Terraform to securely retrieve account credentials, keys, and secrets using APIs.
 
-## Terraform Provider Block and Data Block Naming Metrics
+## Summary of Steps
 
-The naming convention for the Terraform blocks is based on the following structure:
-
-- **Provider Block**: The provider block name must be `"securden"` as shown below:
-  
-  ```hcl
-  provider "securden" {
-    authtoken  = var.authtoken
-    server_url = var.server_url
-  }
-  ```
-
-- **Data Block**: The data block name must be `"securden_account"`, as this data source retrieves key-value data from the Securden system. Example:
-
-  ```hcl
-  data "securden_account" "account_data" {
-    account_id = 2000000004406
-  }
-  ```
-
-  In the above example:
-  - `"securden_account"`: This is the fixed name of the data block to fetch key-value data from Securden.
-  - `"account_data"`: This is the user-defined name for the resource that can be referenced throughout the Terraform configuration. You can replace `"account_data"` with any meaningful name according to your use case.
-
-The naming convention ensures that the Terraform configuration remains consistent and intuitive while interacting with the Securden provider.
+1. Configuration in Securden  
+2. Defining the Securden Provider Block  
+3. Checking with Data Block  
+4. Configuring the Output Block  
+5. Accessing Data  
+6. Adding Additional Fields  
+7. Available Data Fields in the Plugin  
 
 ---
 
-## Example Usage
+## 1. Configuration to be Done in Terraform
 
-### Provider Configuration
+### a. Initialize Securden Provider
+Add the following block to your `main.tf` file to initialize the Securden provider:
+
+Refer [SecurdenDevOps/securden](https://registry.terraform.io/providers/SecurdenDevOps/securden/latest) | Terraform Registry for versions and updates.
+
+### b. Declare Variables to Store Securden Attributes
+Define two variables to store the Securden authentication token and server URL.
+
+Initialize these variables with the correct values for your environment. For example, using environment variables:
+
+- **Windows Command Prompt:**  
+  ```sh
+  set TF_VAR_authtoken=tf45....<authtoken>
+  ```
+
+- **Mac/Linux:**  
+  ```sh
+  export TF_VAR_authtoken=<authtoken>
+  ```
+
+---
+
+## 2. Provider Block
+Define the Securden provider block, referencing the previously declared variables:
 
 ```hcl
 provider "securden" {
-  authtoken  = var.authtoken
+  authtoken = var.authtoken
   server_url = var.server_url
 }
 ```
 
-- `authtoken`: The API authentication token used to access Securden.
-- `server_url`: The URL for your Securden server.
+---
 
-These values can be set via variables, environment variables, or directly in the provider block.
+## 3. Using the Data Block
+To fetch account data from Securden, use a data block. Here’s an example to fetch SSH key credentials:
+
+```hcl
+data "securden_keyvalue" "ssh" {
+  account_id = "2000000002800"
+}
+```
+
+> **Note:** You can retrieve specific accounts using `account_id`, `account_name`, or `account_title`. If you use `account_name`, you can also include `account_title` to ensure you don’t retrieve multiple accounts in case there are several accounts with the same name.
 
 ---
 
-### Data Source Configuration
-
-To fetch account data from Securden, use the `securden_account` data block. You can provide either an `account_id` or a combination of `account_name` and `account_title`.
-
-#### Fetching Account by `account_id`
+## 4. Output Block
+Using the Output block to display data fetched from Securden by the plugin:
 
 ```hcl
-data "securden_account" "account_data" {
-  account_id = 2000000004406
+output "ssh_password" {
+  value     = data.securden_keyvalue.ssh.password
+  sensitive = true
 }
 ```
 
-#### Fetching Account by `account_name` and `account_title`
+Setting the variable `sensitive = true` hides the credential value during execution, preventing the credentials from being accidentally displayed in return values or error messages.
+
+---
+
+## 5. Accessing Data
+Here are some examples of how to access various credentials from the Securden data block:
+
+- **For Password:** `data.securden_keyvalue.ssh.password`  
+- **For PuTTY Private Key:** `data.securden_keyvalue.ssh.putty_private_key`  
+- **For PuTTY Passphrase:** `data.securden_keyvalue.ssh.ppk_passphrase`  
+
+---
+
+## 6. Additional Fields
+If your account type has additional fields in Securden, you can retrieve the value of additional fields by specifying a `key_field` and `key_value`:
 
 ```hcl
-data "securden_account" "account_data" {
-  account_name  = "my_account"
-  account_title = "production"
+data "securden_keyvalue" "ssh" {
+  account_id = "2000000002800"
+  key_field  = "custom_field"
+  key_value  = "field_value"
 }
 ```
 
-> **Note:** 
-> - Either `account_id` or `account_name` and `account_title` is required. 
-> - If both `account_id` and the combination of `account_name` and `account_title` are provided, `account_id` will take priority. 
-> - If only `account_name` and `account_title` are provided, the account will be fetched using their combination.
+---
+
+## 7. Available Data Fields in Plugin
+Here is a list of the account attributes that can be retrieved for use in Terraform using the Securden plugin:
+
+- `account_id`
+- `account_name`
+- `account_title`
+- `password`
+- `key_value`
+- `private_key`
+- `putty_private_key`
+- `passphrase`
+- `ppk_passphrase`
+- `address`
+- `client_id`
+- `client_secret`
+- `account_alias`
+- `account_file`
+- `default_database`
+- `sql_server_port`
+- `mysql_port`
+- `oracle_sid`
+- `oracle_service_name`
+- `oracle_port`
+
+> **Note:** Data can only be retrieved for the attributes that are available in the account. For any other fields, or if there is a non-existent value, a null value will be returned when the code is executed.
 
 ---
 
 ## Bulk Password Retrieval
+You have the option to fetch account passwords in bulk from Securden at once using a data block.
 
-You have the option to fetch account passwords in bulk from Securden at once using a dedicated data block.
+The major difference between `securden_account` and `securden_passwords` commands is that:
+- `securden_account` will raise a request each time it is called by the data block for a single account.
+- `securden_passwords` will retrieve multiple account passwords in a single fetch, reducing overall time consumption.
 
-### Difference Between `securden_account` and `securden_passwords`
-
-- `securden_account`: Fetches data for a single account, requiring a new request each time a data block is called.
-- `securden_passwords`: Retrieves passwords for multiple accounts in a single fetch, significantly reducing the overall time consumption.
-
-### Example Usage: Bulk Password Retrieval
-
-Use the `securden_passwords` data block to fetch multiple account passwords based on their respective account IDs:
+Here’s an example of a data block used to fetch multiple account passwords:
 
 ```hcl
-data "securden_passwords" "bulk_passwords" {
-  account_ids = [
-    2000000002800,
-    2000000002801,
-    2000000002802
-  ]
-}
-
-output "account_password_1" {
-  value = data.securden_passwords.bulk_passwords.passwords[2000000002800]
-}
-
-output "account_password_2" {
-  value = data.securden_passwords.bulk_passwords.passwords[2000000002801]
-}
-
-output "account_password_3" {
-  value = data.securden_passwords.bulk_passwords.passwords[2000000002802]
-}
+data "securden_passwords" "passwords" {}
 ```
 
-In this example:
-- **`data.securden_passwords.bulk_passwords.passwords[2000000002800]`**: Retrieves the password for the account with ID `2000000002800` from the bulk data fetched in a single request.
-
-> **Tip**: Use `securden_passwords` when working with multiple accounts to optimize performance.
-
----
-
-## Accessing Account Data
-
-Once the data is fetched, you can access the account details as follows:
+Accounts whose passwords need to be retrieved can be called by their respective account IDs:
 
 ```hcl
-output "password" {
-  value = data.securden_account.account_data.password
-}
-
-output "port" {
-  value = data.securden_account.account_data.port
-}
-
-output "account_name" {
-  value = data.securden_account.account_data.account_name
-}
+data.securden_passwords.passwords["2000000002800"]
 ```
 
----
-
-## Argument Reference
-
-### Provider
-
-- `authtoken` (Required): The API token used for authentication with Securden.
-- `server_url` (Required): The URL for the Securden server.
-
-### Data Source: `securden_account`
-
-- `account_id` (Optional): The unique identifier of the account.
-- `account_name` (Optional): The name of the account.
-- `account_title` (Optional): The title of the account.
-
-> **Note:** 
-> - Either `account_id` or `account_name` and `account_title` are required.
-> - If `account_id` is provided, it will take precedence over `account_name` and `account_title`.
-> - If both `account_name` and `account_title` are provided, the account will be fetched using their combination.
-
-### Data Source: `securden_passwords`
-
-- `account_ids` (Required): A list of account IDs for which passwords need to be retrieved.
-- **`passwords`**: The attribute `passwords` is a map where the keys are account IDs, and the values are their corresponding passwords.
-
----
-
-## Attributes Reference
-
-The following fields are available and can be accessed after retrieving account data:
-
-- `account_id`: The unique identifier of the account.
-- `account_name`: The name of the account.
-- `account_title`: The title of the account.
-- `password`: The password for the account.
-- `key_field`: A field key related to the account.
-- `key_value`: The value corresponding to the key field.
-- `private_key`: The private key associated with the account.
-- `putty_private_key`: The PuTTY-format private key.
-- `passphrase`: The passphrase used for the private key.
-- `ppk_passphrase`: The passphrase for the PuTTY private key.
-- `address`: The address associated with the account.
-- `client_id`: The client ID for the account.
-- `client_secret`: The client secret for the account.
-- `account_alias`: The alias or alternative name for the account.
-- `account_file`: The file associated with the account.
-- `oracle_sid`: The Oracle SID for the account.
-- `oracle_service_name`: The Oracle service name for the account.
-- `default_database`: The default database associated with the account.
-- `port`: The port number for the account.
-```

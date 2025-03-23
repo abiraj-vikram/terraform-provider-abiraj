@@ -64,19 +64,19 @@ func (d *AddAccount) Schema(ctx context.Context, req datasource.SchemaRequest, r
 				Optional:            true,
 			},
 			"notes": schema.StringAttribute{
-				MarkdownDescription: "Notes of the account",
+				MarkdownDescription: "Account Notes",
 				Optional:            true,
 			},
 			"tags": schema.StringAttribute{
-				MarkdownDescription: "Tags of the account",
+				MarkdownDescription: "Account Tags",
 				Optional:            true,
 			},
 			"personal_account": schema.BoolAttribute{
-				MarkdownDescription: "Personal account flag (Boolean)",
+				MarkdownDescription: "Personal account",
 				Optional:            true,
 			},
 			"folder_id": schema.Int64Attribute{
-				MarkdownDescription: "Folder ID in which the account to be added (Long Integer)",
+				MarkdownDescription: "Folder ID of the account belongs to be",
 				Optional:            true,
 			},
 			"password": schema.StringAttribute{
@@ -84,7 +84,7 @@ func (d *AddAccount) Schema(ctx context.Context, req datasource.SchemaRequest, r
 				Optional:            true,
 			},
 			"account_expiration_date": schema.StringAttribute{
-				MarkdownDescription: "Expiration date of the account (Date Format - DD/MM/YYYY)",
+				MarkdownDescription: "Expiration date for the account (Date Format - DD/MM/YYYY)",
 				Optional:            true,
 			},
 			"distinguished_name": schema.StringAttribute{
@@ -96,14 +96,16 @@ func (d *AddAccount) Schema(ctx context.Context, req datasource.SchemaRequest, r
 				Optional:            true,
 			},
 			"domain_name": schema.StringAttribute{
-				MarkdownDescription: "Required for Google Workspace accounts",
+				MarkdownDescription: "Required for Azure, AD, LDAP and Google Workspace accounts",
 				Optional:            true,
 			},
 			"id": schema.Int64Attribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "ID of added account",
 			},
 			"message": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Response Message",
 			},
 		},
 	}
