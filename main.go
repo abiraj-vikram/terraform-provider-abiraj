@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "hashicorp/local/securden",
+		Address: "registry.terraform.io/securdendevops/securden",
 		Debug:   debug,
 	}
 
