@@ -28,7 +28,6 @@ type EditAccountModel struct {
 	IPAddress                 types.String `tfsdk:"ipaddress"`
 	Notes                     types.String `tfsdk:"notes"`
 	Tags                      types.String `tfsdk:"tags"`
-	PersonalAccount           types.Bool   `tfsdk:"personal_account"`
 	FolderID                  types.Int64  `tfsdk:"folder_id"`
 	OverwriteAdditionalFields types.Bool   `tfsdk:"overwrite_additional_fields"`
 	AccountExpirationDate     types.String `tfsdk:"account_expiration_date"`
@@ -158,7 +157,6 @@ func (d *EditAccount) Read(ctx context.Context, req datasource.ReadRequest, resp
 	setParam(params, "ipaddress", account.IPAddress)
 	setParam(params, "notes", account.Notes)
 	setParam(params, "tags", account.Tags)
-	setParam(params, "personal_account", account.PersonalAccount)
 	setParam(params, "folder_id", account.FolderID)
 	setParam(params, "overwrite_additional_fields", account.OverwriteAdditionalFields)
 	setParam(params, "account_expiration_date", account.AccountExpirationDate)
