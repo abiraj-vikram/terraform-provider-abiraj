@@ -240,3 +240,7 @@ Here `account_ids` alone require field and reason is a optional field, View More
 
 ---
 -> If you have general questions or issues in using Securden Provider, you may raise a support request to devops-support@securden.com. Our support team will get back to you at the earliest and provide a timeline if there are issue fixes involved. 
+
+## Changelog  
+
+See [Full Changelog](https://registry.terraform.io/providers/abirajvp/abiraj/latest/docs/changelog).
