@@ -13,7 +13,7 @@ This guide will take you through the process of setting up and using Securden PA
 ## Summary of Steps
 
 1. Adding Securden to Terraform
-2. Configuration
+2. Setting Environment Variables
 3. Fetch Account Data
 4. Accessing Account Data
 5. Fetch Multiple Accounts
@@ -31,16 +31,35 @@ terraform {
 }
 ```
 
-## 2. Configuration
+## 2. Setting Environemnt Varibales
 
 ### a. Environment Variables Required
+### Required
+
+- `server_url` (String) Securden Server URL. Example: https://company.securden.com:5959.
+- `authtoken` (String) Securden API Authentication Token.
+- `certificate` (String) Securden Server SSL Certificate.
+
+-> Certificate (SSL Certificate) **is Optional**: If an SSL certificate is provided, the connection will strictly use it. If the certificate is incorrect, the connection will fail. If no certificate is provided, the plugin will attempt to auto-fetch the SSL certificate. If auto-fetch fails, SSL verification will be disabled, and the request will proceed over an insecure HTTPS connection.
+
+### API Token for Authentication  
+
+> **&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Securden server supports API token-based authentication for programmatic access to credentials. You can generate and copy the auth token from the Securden web interface by navigating to Admin >> API Access >> Create and Manage API Tokens.**
+
+1. You need to specify the API reference name and description for identification purposes.
+2. You need to specify the IP addresses or a range of IP from which this token can be used.
+3. You can create a static (with a permanent or a time limited validity) or a dynamic auth token.
+4. You can specify the scope of the actions this auth token by selecting the required capabilities from the list.
+5. Once the preferences are set, click on Create Token.
+6. Now copy the authentication token.
+
 
 #### i. Terraform Variables
 
 ```hcl
 variable "server_url" {
     type    = string
-    default = "<securden-host-url>"
+    default = "<securden-server-url>"
 }
 
 variable "authtoken" {
@@ -56,7 +75,7 @@ Define two variables to store Securden API authentication token and Server URL.
 - **Windows**  
 ```sh
 set TF_VAR_authtoken=<authtoken>
-set TF_VAR_server_url=<securden-host-url>
+set TF_VAR_server_url=<securden-server-url>
 # Optional
 set TF_VAR_certificate="\path\to\certificate.pem"
 ```
@@ -64,10 +83,11 @@ set TF_VAR_certificate="\path\to\certificate.pem"
 - **Mac/Linux**  
 ```sh
 export TF_VAR_authtoken=<authtoken>
-export TF_VAR_server_url=<securden-host-url>
+export TF_VAR_server_url=<securden-server-url>
 # Optional
-set TF_VAR_certificate="\path\to\certificate.pem"
+export TF_VAR_certificate="\path\to\certificate.pem"
 ```
+
 
 ### b. Initializing Securden with Provider Block
 
@@ -78,7 +98,7 @@ provider "securden" {
 }
 ```
 
-## 3. Fetching Account
+## 3. Fetching Account Data
 
 To fetch account data from Securden, use a data block. Here’s an example to fetch account credentials:
 
@@ -169,7 +189,7 @@ data "securden_add_account" "added_account"{
 }
 ```
 
-The above are the required fields to add account in Securden. In addition to that there are some other optional fields can be provided along with your account type and requirements.
+The above are the required fields to add account in Securden. In addition to that there are some other optional fields that can be provided along with your account type and requirements.
 
 
 #### List of Optional Fields
@@ -191,7 +211,7 @@ Can view briefly on securden_add_account under Data Source
 
 ### ii. Edit Account
 
-To edit the existing account in securden we will be using `securden_edit_account` data block, Example:
+To edit the existing account in Securden we will be using `securden_edit_account` data block, Example:
 
 ```hcl
 data "securden_edit_account" "updated_account"{
@@ -206,7 +226,7 @@ Here `account_id` and `account_type` are required field and rest of the fields a
 
 ### iii. Delete Accounts
 
-To delete accounts in securden we will be using `securden_delete_accounts` data block, Example:
+To delete accounts in Securden we will be using `securden_delete_accounts` data block, Example:
 
 ```hcl
 data "securden_delete_accounts" "deleted_accounts" {
@@ -219,4 +239,4 @@ Here `account_ids` alone require field and reason is a optional field, View More
 
 
 ---
--> If you have general questions or issues about using the Securden Provider, you may submit a request to devops-support@securden.com. Note that we may unable to guarantee a quick response to all requests, our Support team will get back to you with a timeline.
+-> If you have general questions or issues in using Securden Provider, you may raise a support request to devops-support@securden.com. Our support team will get back to you at the earliest and provide a timeline if there are issue fixes involved. 

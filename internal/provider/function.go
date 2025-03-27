@@ -41,7 +41,7 @@ func logger(data interface{}) error {
 
 func isValidURL(input string) bool {
 	parsedURL, err := url.Parse(input)
-	if err != nil || parsedURL.Scheme != "https" || parsedURL.Host == "" {
+	if err != nil || (parsedURL.Scheme != "https" && parsedURL.Scheme != "http") || parsedURL.Host == "" {
 		return false
 	}
 
