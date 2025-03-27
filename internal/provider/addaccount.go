@@ -44,68 +44,68 @@ func (d *AddAccount) Metadata(ctx context.Context, req datasource.MetadataReques
 
 func (d *AddAccount) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Securden data source",
+		MarkdownDescription: "Defines the structure for managing accounts in Securden.",
 
 		Attributes: map[string]schema.Attribute{
 			"account_title": schema.StringAttribute{
-				MarkdownDescription: "Title of the account",
+				MarkdownDescription: "The title associated with the account.",
 				Required:            true,
 			},
 			"account_name": schema.StringAttribute{
-				MarkdownDescription: "Name of the account",
+				MarkdownDescription: "The name associated with the account.",
 				Required:            true,
 			},
 			"account_type": schema.StringAttribute{
-				MarkdownDescription: "Type of the account",
+				MarkdownDescription: "Specifies the type or category of the account.",
 				Required:            true,
 			},
-			"ipaddress": schema.StringAttribute{
-				MarkdownDescription: "IP Address of the account",
-				Optional:            true,
-			},
-			"notes": schema.StringAttribute{
-				MarkdownDescription: "Account Notes",
-				Optional:            true,
-			},
-			"tags": schema.StringAttribute{
-				MarkdownDescription: "Account Tags",
+			"password": schema.StringAttribute{
+				MarkdownDescription: "The password associated with the account.",
 				Optional:            true,
 			},
 			"personal_account": schema.BoolAttribute{
-				MarkdownDescription: "Personal account",
+				MarkdownDescription: "Indicates whether the account is personal (true/false).",
+				Optional:            true,
+			},
+			"ipaddress": schema.StringAttribute{
+				MarkdownDescription: "The IP address of the account (if applicable).",
 				Optional:            true,
 			},
 			"folder_id": schema.Int64Attribute{
-				MarkdownDescription: "Folder ID of the account belongs to be",
+				MarkdownDescription: "The ID of the folder where the account is stored.",
 				Optional:            true,
 			},
-			"password": schema.StringAttribute{
-				MarkdownDescription: "Password of the account",
+			"notes": schema.StringAttribute{
+				MarkdownDescription: "Additional notes related to the account.",
+				Optional:            true,
+			},
+			"tags": schema.StringAttribute{
+				MarkdownDescription: "Tags associated with the account.",
 				Optional:            true,
 			},
 			"account_expiration_date": schema.StringAttribute{
-				MarkdownDescription: "Expiration date for the account (Date Format - DD/MM/YYYY)",
+				MarkdownDescription: "The expiration date of the account (format: DD/MM/YYYY).",
 				Optional:            true,
 			},
 			"distinguished_name": schema.StringAttribute{
-				MarkdownDescription: "Required for LDAP domain accounts",
+				MarkdownDescription: "Required for LDAP domain accounts.",
 				Optional:            true,
 			},
 			"account_alias": schema.StringAttribute{
-				MarkdownDescription: "Required for AWS IAM accounts",
+				MarkdownDescription: "Required for AWS IAM accounts.",
 				Optional:            true,
 			},
 			"domain_name": schema.StringAttribute{
-				MarkdownDescription: "Required for Azure, AD, LDAP and Google Workspace accounts",
+				MarkdownDescription: "Required for Google Workspace accounts.",
 				Optional:            true,
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
-				MarkdownDescription: "ID of added account",
+				MarkdownDescription: "Unique identifier of the created account in Securden.",
 			},
 			"message": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Response Message",
+				MarkdownDescription: "Response message indicating the result of the operation.",
 			},
 		},
 	}

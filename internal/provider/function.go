@@ -162,7 +162,7 @@ func fetchSSLCertificate(serverURL string) (*x509.Certificate, error) {
 
 	host := parsedURL.Host
 	if parsedURL.Port() == "" {
-		host += ":443"
+		host += default_port
 	}
 
 	conn, err := tls.Dial("tcp", host, &tls.Config{
@@ -410,6 +410,61 @@ func get_accounts(ctx context.Context, params map[string]any) (map[string]map[st
 	}
 
 	return processedAccounts, 200, "Success"
+}
+
+func get_passwords(ctx context.Context, accountIDs []string) (types.Map, int, string) {
+	var accountIDsInt64 []int64
+	for _, id := range accountIDs {
+		accountID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return types.Map{}, 400, fmt.Sprintf("Invalid account ID format: %v", err)
+		}
+		accountIDsInt64 = append(accountIDsInt64, accountID)
+	}
+
+	params := map[string]interface{}{
+		"account_ids": accountIDsInt64,
+	}
+
+	body, err := raise_request(params, "/api/get_multiple_accounts_passwords", "POST")
+	if err != nil {
+		return types.Map{}, 500, fmt.Sprintf("Error in API call: %v", err)
+	}
+
+	var response struct {
+		Passwords  map[string]string `json:"passwords"`
+		StatusCode int               `json:"status_code"`
+		Message    string            `json:"message"`
+		Error      struct {
+			Code    interface{} `json:"code"`
+			Message string      `json:"message"`
+		} `json:"error"`
+	}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return types.Map{}, 500, fmt.Sprintf("Failed to parse response: %v", err)
+	}
+
+	if response.StatusCode != 200 {
+		errorMessage := response.Message
+		if response.Error.Message != "" {
+			errorMessage = response.Error.Message
+		}
+		return types.Map{}, response.StatusCode, errorMessage
+	}
+
+	passwordsMap := make(map[string]attr.Value, len(response.Passwords))
+	for k, v := range response.Passwords {
+		passwordsMap[k] = types.StringValue(v)
+	}
+
+	passwords, diags := types.MapValue(types.StringType, passwordsMap)
+	if diags.HasError() {
+		return types.Map{}, 500, fmt.Sprintf("Error setting map value: %v", diags)
+	}
+
+	return passwords, response.StatusCode, "Success"
 }
 
 func add_account_function(ctx context.Context, params map[string]any) (AddAccountModel, int, string) {

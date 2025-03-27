@@ -3,12 +3,12 @@
 page_title: "securden_account Data Source - terraform-provider-securden"
 subcategory: ""
 description: |-
-  Securden data source
+  Retrieves account details from Securden.
 ---
 
 # securden_account (Data Source)
 
-Securden data source
+Retrieves account details from Securden.
 
 
 
@@ -17,11 +17,11 @@ Securden data source
 
 ### Optional
 
-- `account_id` (Number) ID of the account
-- `account_name` (String) Name of the account
-- `account_title` (String) Title of the account
-- `account_type` (String) Type of the account
+- `account_id` (Number) Unique identifier of the account.
+- `account_name` (String) The name associated with the account.
+- `account_title` (String) Title or designation of the account.
+- `account_type` (String) Specifies the type or category of the account.
 
 ### Read-Only
 
-- `account` (Map of String) Account data with key-value pairs
+- `account` (Map of String) A map containing account attributes as keys and their corresponding values.

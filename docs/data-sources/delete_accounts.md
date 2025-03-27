@@ -3,12 +3,12 @@
 page_title: "securden_delete_accounts Data Source - terraform-provider-securden"
 subcategory: ""
 description: |-
-  Securden data source
+  Defines the structure for managing account deletions in Securden
 ---
 
 # securden_delete_accounts (Data Source)
 
-Securden data source
+Defines the structure for managing account deletions in Securden
 
 
 
@@ -17,14 +17,14 @@ Securden data source
 
 ### Required
 
-- `account_ids` (List of Number) Account IDs to be deleted
+- `account_ids` (List of Number) List of account IDs to be deleted
 
 ### Optional
 
-- `delete_permanently` (Boolean) Account will be deleted permanently
-- `reason` (String) Reason for the account deletetion
+- `delete_permanently` (Boolean) Indicates whether the accounts should be permanently deleted (true/false)
+- `reason` (String) Reason for deleting the accounts
 
 ### Read-Only
 
-- `deleted_accounts` (List of Number) Deleted account IDs
-- `message` (String) Response Message
+- `deleted_accounts` (List of Number) List of account IDs that were successfully deleted
+- `message` (String) Response message indicating the result of the deletion operation

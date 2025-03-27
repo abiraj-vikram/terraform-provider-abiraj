@@ -3,12 +3,12 @@
 page_title: "securden_accounts Data Source - terraform-provider-securden"
 subcategory: ""
 description: |-
-  Securden data source
+  Retrieves multiple account details from Securden.
 ---
 
 # securden_accounts (Data Source)
 
-Securden data source
+Retrieves multiple account details from Securden.
 
 
 
@@ -17,8 +17,8 @@ Securden data source
 
 ### Required
 
-- `account_ids` (List of Number) IDs of account to be fetched
+- `account_ids` (List of Number) A list of account IDs to fetch details for.
 
 ### Read-Only
 
-- `accounts` (Map of Map of String) Multiple accounts data with account ID as key and value will be key-value pairs of account data
+- `accounts` (Map of Map of String) A map containing multiple account details, where each key represents an account ID and the value is a map of account attributes.

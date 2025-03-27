@@ -3,12 +3,12 @@
 page_title: "securden_add_account Data Source - terraform-provider-securden"
 subcategory: ""
 description: |-
-  Securden data source
+  Defines the structure for managing accounts in Securden
 ---
 
 # securden_add_account (Data Source)
 
-Securden data source
+Defines the structure for managing accounts in Securden
 
 
 
@@ -17,24 +17,24 @@ Securden data source
 
 ### Required
 
-- `account_name` (String) Name of the account
-- `account_title` (String) Title of the account
-- `account_type` (String) Type of the account
+- `account_name` (String) The name associated with the account
+- `account_title` (String) The title associated with the account
+- `account_type` (String) Specifies the type or category of the account
 
 ### Optional
 
 - `account_alias` (String) Required for AWS IAM accounts
-- `account_expiration_date` (String) Expiration date for the account (Date Format - DD/MM/YYYY)
+- `account_expiration_date` (String) The expiration date of the account (format: DD/MM/YYYY)
 - `distinguished_name` (String) Required for LDAP domain accounts
-- `domain_name` (String) Required for Azure, AD, LDAP and Google Workspace accounts
-- `folder_id` (Number) Folder ID of the account belongs to be
-- `ipaddress` (String) IP Address of the account
-- `notes` (String) Account Notes
-- `password` (String) Password of the account
-- `personal_account` (Boolean) Personal account
-- `tags` (String) Account Tags
+- `domain_name` (String) Required for Google Workspace accounts
+- `folder_id` (Number) The ID of the folder where the account is stored
+- `ipaddress` (String) The IP address of the account (if applicable)
+- `notes` (String) Additional notes related to the account
+- `password` (String) The password associated with the account
+- `personal_account` (Boolean) Indicates whether the account is personal (true/false)
+- `tags` (String) Tags associated with the account
 
 ### Read-Only
 
-- `id` (Number) ID of added account
-- `message` (String) Response Message
+- `id` (Number) Unique identifier of the created account in Securden
+- `message` (String) Response message indicating the result of the operation

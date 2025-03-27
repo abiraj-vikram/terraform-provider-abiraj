@@ -31,18 +31,18 @@ func (d *Accounts) Metadata(ctx context.Context, req datasource.MetadataRequest,
 
 func (d *Accounts) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Securden data source",
+		MarkdownDescription: "Retrieves multiple account details from Securden.",
 
 		Attributes: map[string]schema.Attribute{
 			"account_ids": schema.ListAttribute{
 				ElementType:         types.Int64Type,
-				MarkdownDescription: "IDs of account to be fetched",
+				MarkdownDescription: "A list of account IDs to fetch details for.",
 				Required:            true,
 			},
 			"accounts": schema.MapAttribute{
 				ElementType:         types.MapType{ElemType: types.StringType},
 				Computed:            true,
-				MarkdownDescription: "Multiple accounts data with account ID as key and value will be key-value pairs of account data",
+				MarkdownDescription: "A map containing multiple account details, where each key represents an account ID and the value is a map of account attributes.",
 			},
 		},
 	}

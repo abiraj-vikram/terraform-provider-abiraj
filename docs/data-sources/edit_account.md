@@ -3,12 +3,12 @@
 page_title: "securden_edit_account Data Source - terraform-provider-securden"
 subcategory: ""
 description: |-
-  Securden data source
+  Defines the structure for managing account updates in Securden.
 ---
 
 # securden_edit_account (Data Source)
 
-Securden data source
+Defines the structure for managing account updates in Securden.
 
 
 
@@ -17,24 +17,23 @@ Securden data source
 
 ### Required
 
-- `account_id` (Number) ID of the account
-- `account_type` (String) Type of the account
+- `account_id` (Number) Unique identifier of the account.
+- `account_type` (String) Specifies the type of the account.
 
 ### Optional
 
-- `account_alias` (String) Required for AWS IAM accounts
-- `account_expiration_date` (String) Expiration date for the account (Date Format - DD/MM/YYYY)
-- `account_name` (String) Name of the account
-- `account_title` (String) Title of the account
-- `distinguished_name` (String) Required for LDAP domain accounts
-- `domain_name` (String) Required for AD and Google Workspace accounts
-- `folder_id` (Number) Folder ID of the account belongs to be
-- `ipaddress` (String) IP Address of the account
-- `notes` (String) Account notes
-- `overwrite_additional_fields` (Boolean) Overwrite additional fields
-- `personal_account` (Boolean) Personal account
-- `tags` (String) Tags for the Account
+- `account_alias` (String) Required for AWS IAM accounts.
+- `account_expiration_date` (String) The expiration date of the account (format: DD/MM/YYYY).
+- `account_name` (String) The name associated with the account.
+- `account_title` (String) The title associated with the account.
+- `distinguished_name` (String) Required for LDAP domain accounts.
+- `domain_name` (String) Required for Google Workspace accounts.
+- `folder_id` (Number) The ID of the folder where the account belongs to.
+- `ipaddress` (String) The IP address of the account (if applicable).
+- `notes` (String) Additional notes related to the account.
+- `overwrite_additional_fields` (Boolean) Indicates whether additional fields should be overwritten (true/false).
+- `tags` (String) Tags associated with the account.
 
 ### Read-Only
 
-- `message` (String) Response Message
+- `message` (String) Response message indicating the result of the operation.

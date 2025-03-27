@@ -50,33 +50,33 @@ func (d *Account) Metadata(ctx context.Context, req datasource.MetadataRequest, 
 
 func (d *Account) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Securden data source",
+		MarkdownDescription: "Retrieves account details from Securden.",
 
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.Int64Attribute{
-				MarkdownDescription: "ID of the account",
 				Optional:            true,
 				Computed:            true,
+				MarkdownDescription: "Unique identifier of the account.",
 			},
 			"account_name": schema.StringAttribute{
-				MarkdownDescription: "Name of the account",
 				Optional:            true,
 				Computed:            true,
+				MarkdownDescription: "The name associated with the account.",
 			},
 			"account_title": schema.StringAttribute{
-				MarkdownDescription: "Title of the account",
 				Optional:            true,
 				Computed:            true,
+				MarkdownDescription: "Title or designation of the account.",
 			},
 			"account_type": schema.StringAttribute{
-				MarkdownDescription: "Type of the account",
 				Optional:            true,
 				Computed:            true,
+				MarkdownDescription: "Specifies the type or category of the account.",
 			},
 			"account": schema.MapAttribute{
 				ElementType:         types.StringType,
 				Computed:            true,
-				MarkdownDescription: "Account data with key-value pairs",
+				MarkdownDescription: "A map containing account attributes as keys and their corresponding values.",
 			},
 		},
 	}
