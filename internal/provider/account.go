@@ -21,27 +21,11 @@ type Account struct {
 }
 
 type AccountModel struct {
-	AccountID         types.Int64  `tfsdk:"account_id"`
-	AccountName       types.String `tfsdk:"account_name"`
-	AccountTitle      types.String `tfsdk:"account_title"`
-	AccountType       types.String `tfsdk:"account_type"`
-	Account           types.Map    `tfsdk:"account"`
-	Password          types.String `tfsdk:"password"`
-	KeyField          types.String `tfsdk:"key_field"`
-	KeyValue          types.String `tfsdk:"key_value"`
-	PrivateKey        types.String `tfsdk:"private_key"`
-	PuTTYPrivateKey   types.String `tfsdk:"putty_private_key"`
-	Passphrase        types.String `tfsdk:"passphrase"`
-	PPKPassphrase     types.String `tfsdk:"ppk_passphrase"`
-	Address           types.String `tfsdk:"address"`
-	ClientID          types.String `tfsdk:"client_id"`
-	ClientSecret      types.String `tfsdk:"client_secret"`
-	AccountAlias      types.String `tfsdk:"account_alias"`
-	AccountFile       types.String `tfsdk:"account_file"`
-	OracleSID         types.String `tfsdk:"oracle_sid"`
-	OracleServiceName types.String `tfsdk:"oracle_service_name"`
-	DefaultDatabase   types.String `tfsdk:"default_database"`
-	Port              types.String `tfsdk:"port"`
+	AccountID    types.Int64  `tfsdk:"account_id"`
+	AccountName  types.String `tfsdk:"account_name"`
+	AccountTitle types.String `tfsdk:"account_title"`
+	AccountType  types.String `tfsdk:"account_type"`
+	Account      types.Map    `tfsdk:"account"`
 }
 
 func (d *Account) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -104,11 +88,10 @@ func (d *Account) Create(ctx context.Context, req datasource.ReadRequest, resp *
 	account_name := account.AccountName.ValueString()
 	account_title := account.AccountTitle.ValueString()
 	account_type := account.AccountType.ValueString()
-	account_field := account.KeyField.ValueString()
 	var data AccountModel
 	var code int
 	var message string
-	data, code, message = get_account(ctx, account_id, account_name, account_title, account_type, account_field)
+	data, code, message = get_account(ctx, account_id, account_name, account_title, account_type)
 	if code != 200 {
 		resp.Diagnostics.AddWarning(fmt.Sprintf("%d - %s", code, message), "")
 		return
@@ -123,11 +106,10 @@ func (d *Account) Read(ctx context.Context, req datasource.ReadRequest, resp *da
 	account_name := account.AccountName.ValueString()
 	account_title := account.AccountTitle.ValueString()
 	account_type := account.AccountType.ValueString()
-	account_field := account.KeyField.ValueString()
 	var data AccountModel
 	var code int
 	var message string
-	data, code, message = get_account(ctx, account_id, account_name, account_title, account_type, account_field)
+	data, code, message = get_account(ctx, account_id, account_name, account_title, account_type)
 	if code != 200 {
 		resp.Diagnostics.AddWarning(fmt.Sprintf("%d - %s", code, message), "")
 		return

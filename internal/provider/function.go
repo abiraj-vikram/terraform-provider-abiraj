@@ -318,14 +318,13 @@ func raise_request(params map[string]any, apiURL string, method string) ([]byte,
 	return body, nil
 }
 
-func get_account(ctx context.Context, account_id, account_name, account_title, account_type, key_field string) (AccountModel, int, string) {
+func get_account(ctx context.Context, account_id, account_name, account_title, account_type string) (AccountModel, int, string) {
 	var account AccountModel
 	params := make(map[string]any)
 	setParam(params, "account_id", types.StringValue(account_id))
 	setParam(params, "account_name", types.StringValue(account_name))
 	setParam(params, "account_title", types.StringValue(account_title))
 	setParam(params, "account_type", types.StringValue(account_type))
-	setParam(params, "key_field", types.StringValue(key_field))
 	body, err := get_request(params, "/secretsmanagement/get_account")
 	if err != nil {
 		return account, 500, fmt.Sprintf("Error in API call: %v", err)
