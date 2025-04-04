@@ -1,8 +1,8 @@
 # GoReleaser configuration file for Terraform Plugin
 version: 1
-# before:
-#   hooks:
-#     - go mod tidy
+before:
+  hooks:
+    - go mod tidy
 
 # builds:
 #   - env:
@@ -31,12 +31,12 @@ archives:
   - format: zip  # Preferred format for Terraform plugins
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 
-# checksum:
-#   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
-#   algorithm: sha256
-#   extra_files:
-#     - glob: 'terraform-registry-manifest.json'
-#       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+  extra_files:
+    - glob: 'terraform-registry-manifest.json'
+      name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 
 signs:
   - artifacts: checksum
