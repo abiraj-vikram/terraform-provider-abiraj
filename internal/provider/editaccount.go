@@ -28,7 +28,6 @@ type EditAccountModel struct {
 	IPAddress                 types.String `tfsdk:"ipaddress"`
 	Notes                     types.String `tfsdk:"notes"`
 	Tags                      types.String `tfsdk:"tags"`
-	PersonalAccount           types.Bool   `tfsdk:"personal_account"`
 	FolderID                  types.Int64  `tfsdk:"folder_id"`
 	OverwriteAdditionalFields types.Bool   `tfsdk:"overwrite_additional_fields"`
 	AccountExpirationDate     types.String `tfsdk:"account_expiration_date"`
@@ -44,67 +43,63 @@ func (d *EditAccount) Metadata(ctx context.Context, req datasource.MetadataReque
 
 func (d *EditAccount) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Securden data source",
+		MarkdownDescription: "Defines the structure for managing account updates in Securden.",
 
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.Int64Attribute{
-				MarkdownDescription: "ID of the account",
+				MarkdownDescription: "Unique identifier of the account.",
 				Required:            true,
 			},
+			"account_type": schema.StringAttribute{
+				MarkdownDescription: "Specifies the type of the account.",
+				Optional:            true,
+			},
 			"account_title": schema.StringAttribute{
-				MarkdownDescription: "Title of the account",
+				MarkdownDescription: "The title associated with the account.",
 				Optional:            true,
 			},
 			"account_name": schema.StringAttribute{
-				MarkdownDescription: "Name of the account",
+				MarkdownDescription: "The name associated with the account.",
 				Optional:            true,
 			},
-			"account_type": schema.StringAttribute{
-				MarkdownDescription: "Type of the account",
-				Required:            true,
-			},
 			"ipaddress": schema.StringAttribute{
-				MarkdownDescription: "IP Address of the account",
+				MarkdownDescription: "The IP address of the account (if applicable).",
 				Optional:            true,
 			},
 			"notes": schema.StringAttribute{
-				MarkdownDescription: "Account notes",
+				MarkdownDescription: "Additional notes related to the account.",
 				Optional:            true,
 			},
 			"tags": schema.StringAttribute{
-				MarkdownDescription: "Tags for the Account",
-				Optional:            true,
-			},
-			"personal_account": schema.BoolAttribute{
-				MarkdownDescription: "Personal account",
+				MarkdownDescription: "Tags associated with the account.",
 				Optional:            true,
 			},
 			"folder_id": schema.Int64Attribute{
-				MarkdownDescription: "Folder ID of the account belongs to be",
+				MarkdownDescription: "The ID of the folder where the account belongs to.",
 				Optional:            true,
 			},
 			"account_expiration_date": schema.StringAttribute{
-				MarkdownDescription: "Expiration date for the account (Date Format - DD/MM/YYYY)",
+				MarkdownDescription: "The expiration date of the account (format: DD/MM/YYYY).",
 				Optional:            true,
 			},
 			"distinguished_name": schema.StringAttribute{
-				MarkdownDescription: "Required for LDAP domain accounts",
+				MarkdownDescription: "Required for LDAP domain accounts.",
 				Optional:            true,
 			},
 			"overwrite_additional_fields": schema.BoolAttribute{
-				MarkdownDescription: "Overwrite additional fields",
+				MarkdownDescription: "Indicates whether additional fields should be overwritten (true/false).",
 				Optional:            true,
 			},
 			"account_alias": schema.StringAttribute{
-				MarkdownDescription: "Required for AWS IAM accounts",
+				MarkdownDescription: "Required for AWS IAM accounts.",
 				Optional:            true,
 			},
 			"domain_name": schema.StringAttribute{
-				MarkdownDescription: "Required for AD and Google Workspace accounts",
+				MarkdownDescription: "Required for Google Workspace accounts.",
 				Optional:            true,
 			},
 			"message": schema.StringAttribute{
-				MarkdownDescription: "Response Message",
+				MarkdownDescription: "Response message indicating the result of the operation.",
 				Computed:            true,
 			},
 		},
@@ -130,6 +125,8 @@ func (d *EditAccount) Create(ctx context.Context, req datasource.ReadRequest, re
 	var account EditAccountModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &account)...)
 	params := make(map[string]any)
+	logger("account.AccountID")
+	logger(account.AccountID)
 	setParam(params, "account_id", account.AccountID)
 	setParam(params, "account_title", account.AccountTitle)
 	setParam(params, "account_name", account.AccountName)
@@ -137,13 +134,13 @@ func (d *EditAccount) Create(ctx context.Context, req datasource.ReadRequest, re
 	setParam(params, "ipaddress", account.IPAddress)
 	setParam(params, "notes", account.Notes)
 	setParam(params, "tags", account.Tags)
-	setParam(params, "personal_account", account.PersonalAccount)
 	setParam(params, "folder_id", account.FolderID)
 	setParam(params, "overwrite_additional_fields", account.OverwriteAdditionalFields)
 	setParam(params, "account_expiration_date", account.AccountExpirationDate)
 	setParam(params, "distinguished_name", account.DistinguishedName)
 	setParam(params, "account_alias", account.AccountAlias)
 	setParam(params, "domain_name", account.DomainName)
+	logger(params)
 	edit_account, code, message := edit_account_function(ctx, params)
 	if code != 200 && code != 0 {
 		resp.Diagnostics.AddWarning(fmt.Sprintf("%d - %s", code, message), "")
@@ -163,13 +160,13 @@ func (d *EditAccount) Read(ctx context.Context, req datasource.ReadRequest, resp
 	setParam(params, "ipaddress", account.IPAddress)
 	setParam(params, "notes", account.Notes)
 	setParam(params, "tags", account.Tags)
-	setParam(params, "personal_account", account.PersonalAccount)
 	setParam(params, "folder_id", account.FolderID)
 	setParam(params, "overwrite_additional_fields", account.OverwriteAdditionalFields)
 	setParam(params, "account_expiration_date", account.AccountExpirationDate)
 	setParam(params, "distinguished_name", account.DistinguishedName)
 	setParam(params, "account_alias", account.AccountAlias)
 	setParam(params, "domain_name", account.DomainName)
+	logger(params)
 	edit_account, code, message := edit_account_function(ctx, params)
 	if code != 200 && code != 0 {
 		resp.Diagnostics.AddWarning(fmt.Sprintf("%d - %s", code, message), "")

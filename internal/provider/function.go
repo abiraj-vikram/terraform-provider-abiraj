@@ -39,9 +39,23 @@ func logger(data interface{}) error {
 	return nil
 }
 
+func isServerReachable(serverURL string) bool {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	resp, err := client.Get(serverURL)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	return resp.StatusCode < 400
+}
+
 func isValidURL(input string) bool {
 	parsedURL, err := url.Parse(input)
-	if err != nil || parsedURL.Scheme != "https" || parsedURL.Host == "" {
+	if err != nil || (parsedURL.Scheme != "https" && parsedURL.Scheme != "http") || parsedURL.Host == "" {
 		return false
 	}
 
@@ -59,7 +73,7 @@ func isValidURL(input string) bool {
 		return false
 	}
 
-	hostnameRegex := `^(localhost|([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})$`
+	hostnameRegex := `^(localhost|([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}|(\d{1,3}\.){3}\d{1,3})$`
 	matched, _ := regexp.MatchString(hostnameRegex, host)
 	return matched
 }
@@ -88,19 +102,6 @@ func isValidPEMFile(filePath string) bool {
 	return err == nil
 }
 
-func main() {
-	testPaths := []string{
-		"/path/to/valid-cert.pem",
-		"/invalid/path.pem",
-		"none",
-		"",
-	}
-
-	for _, path := range testPaths {
-		fmt.Printf("%s -> %v\n", path, isValidPEMFile(path))
-	}
-}
-
 func setParam(params map[string]any, key string, value attr.Value) {
 	if !value.IsNull() && !value.IsUnknown() {
 		switch v := value.(type) {
@@ -118,42 +119,6 @@ func setParam(params map[string]any, key string, value attr.Value) {
 	}
 }
 
-func get_request(params map[string]any, api_url string) ([]byte, error) {
-	client := &http.Client{}
-
-	api_url = SecurdenServerURL + api_url
-
-	api_request, err := http.NewRequest("GET", api_url, nil)
-	if err != nil {
-		return nil, err
-	}
-	api_request.Header.Set(const_authtoken, SecurdenAuthToken)
-
-	q := api_request.URL.Query()
-	for key, value := range params {
-		switch v := value.(type) {
-		case string:
-			if v != "" {
-				q.Add(key, v)
-			}
-		case int, int64, float64:
-			q.Add(key, fmt.Sprintf("%v", v))
-		case bool:
-			q.Add(key, strconv.FormatBool(v))
-		default:
-
-		}
-	}
-	api_request.URL.RawQuery = q.Encode()
-	resp, err := client.Do(api_request)
-	if err != nil {
-		return nil, fmt.Errorf("%v", err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	return body, err
-}
-
 func fetchSSLCertificate(serverURL string) (*x509.Certificate, error) {
 	parsedURL, err := url.Parse(serverURL)
 	if err != nil {
@@ -162,12 +127,19 @@ func fetchSSLCertificate(serverURL string) (*x509.Certificate, error) {
 
 	host := parsedURL.Host
 	if parsedURL.Port() == "" {
-		host += ":443"
+		host += default_port
 	}
 
-	conn, err := tls.Dial("tcp", host, &tls.Config{
+	// Custom TLS config that skips hostname verification
+	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
-	})
+		VerifyPeerCertificate: func(rawCerts [][]byte, verifiedChains [][]*x509.Certificate) error {
+			// do nothing here to skip hostname verification
+			return nil
+		},
+	}
+
+	conn, err := tls.Dial("tcp", host, tlsConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect: %v", err)
 	}
@@ -200,6 +172,7 @@ func createSecureClient(cert *x509.Certificate) *http.Client {
 }
 
 func createInsecureClient() *http.Client {
+	fmt.Sprintf("Creating insecure HTTP client")
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -232,26 +205,31 @@ func readPEMFile(filePath string) (*x509.Certificate, error) {
 
 func raise_request(params map[string]any, apiURL string, method string) ([]byte, error) {
 	pattern := regexp.MustCompile("^https")
-	client := &http.Client{}
+	var client *http.Client
+	var err error
+
 	if pattern.MatchString(SecurdenServerURL) {
 		if len(SecurdenCertificate) == 0 {
-			cert, err := fetchSSLCertificate(SecurdenServerURL)
-			if err != nil {
+			cert, certErr := fetchSSLCertificate(SecurdenServerURL)
+			if certErr != nil {
 				client = createInsecureClient()
 			} else {
 				client = createSecureClient(cert)
 			}
 		} else if filepath.IsAbs(SecurdenCertificate) {
-			cert, err := readPEMFile(SecurdenCertificate)
-			if err != nil {
-				return nil, fmt.Errorf("Failed to read certificate: %v", err)
+			cert, certErr := readPEMFile(SecurdenCertificate)
+			if certErr != nil {
+				client = createInsecureClient()
+			} else {
+				client = createSecureClient(cert)
 			}
-			client = createSecureClient(cert)
 		} else {
-
-			return nil, fmt.Errorf("Please provide valid certificate path")
+			client = createInsecureClient()
 		}
+	} else {
+		client = &http.Client{}
 	}
+
 	apiURL = SecurdenServerURL + apiURL
 
 	reqURL, err := url.Parse(apiURL)
@@ -259,16 +237,23 @@ func raise_request(params map[string]any, apiURL string, method string) ([]byte,
 		return nil, fmt.Errorf("failed to parse URL: %v", err)
 	}
 
-	if method == http.MethodDelete {
+	if method == http.MethodGet || method == http.MethodDelete {
 		q := reqURL.Query()
 		for key, value := range params {
 			switch v := value.(type) {
+			case string:
+				if v != "" {
+					q.Add(key, v)
+				}
+			case int, int64, float64:
+				q.Add(key, fmt.Sprintf("%v", v))
+			case bool:
+				q.Add(key, strconv.FormatBool(v))
 			case []int64:
 				for _, num := range v {
 					q.Add(key, fmt.Sprintf("%d", num))
 				}
 			default:
-				q.Add(key, fmt.Sprintf("%v", v))
 			}
 		}
 		reqURL.RawQuery = q.Encode()
@@ -276,10 +261,7 @@ func raise_request(params map[string]any, apiURL string, method string) ([]byte,
 
 	var apiRequest *http.Request
 
-	if method == http.MethodDelete {
-		apiRequest, err = http.NewRequest(method, reqURL.String(), nil)
-	} else {
-
+	if method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch {
 		if ids, exists := params["account_ids"]; exists {
 			if tfIDs, ok := ids.([]types.Int64); ok {
 				var int64IDs []int64
@@ -297,19 +279,27 @@ func raise_request(params map[string]any, apiURL string, method string) ([]byte,
 			return nil, fmt.Errorf("failed to serialize request body: %v", err)
 		}
 
-		apiRequest, err = http.NewRequest(method, apiURL, bytes.NewBuffer(requestBody))
+		apiRequest, err = http.NewRequest(method, reqURL.String(), bytes.NewBuffer(requestBody))
+		apiRequest.Header.Set("Content-Type", "application/json")
+	} else {
+		apiRequest, err = http.NewRequest(method, reqURL.String(), nil)
 	}
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 
-	apiRequest.Header.Set("Content-Type", "application/json")
 	apiRequest.Header.Set(const_authtoken, SecurdenAuthToken)
+
 	resp, err := client.Do(apiRequest)
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %v", err)
+		client = createInsecureClient()
+		resp, err = client.Do(apiRequest)
+		if err != nil {
+			return nil, fmt.Errorf("request failed even with insecure client: %v", err)
+		}
 	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -318,15 +308,14 @@ func raise_request(params map[string]any, apiURL string, method string) ([]byte,
 	return body, nil
 }
 
-func get_account(ctx context.Context, account_id, account_name, account_title, account_type, key_field string) (AccountModel, int, string) {
+func get_account(ctx context.Context, account_id, account_name, account_title, account_type string) (AccountModel, int, string) {
 	var account AccountModel
 	params := make(map[string]any)
 	setParam(params, "account_id", types.StringValue(account_id))
 	setParam(params, "account_name", types.StringValue(account_name))
 	setParam(params, "account_title", types.StringValue(account_title))
 	setParam(params, "account_type", types.StringValue(account_type))
-	setParam(params, "key_field", types.StringValue(key_field))
-	body, err := get_request(params, "/secretsmanagement/get_account")
+	body, err := raise_request(params, "/secretsmanagement/get_account", GET)
 	if err != nil {
 		return account, 500, fmt.Sprintf("Error in API call: %v", err)
 	}
@@ -379,7 +368,7 @@ func get_accounts(ctx context.Context, params map[string]any) (map[string]map[st
 	var accounts_data = make(map[string]any)
 	var null map[string]map[string]string
 
-	body, err := raise_request(params, "/secretsmanagement/get_accounts", "POST")
+	body, err := raise_request(params, "/secretsmanagement/get_accounts", POST)
 	if err != nil {
 		return null, 500, fmt.Sprintf("Error in API call: %v", err)
 	}
@@ -412,9 +401,64 @@ func get_accounts(ctx context.Context, params map[string]any) (map[string]map[st
 	return processedAccounts, 200, "Success"
 }
 
+func get_passwords(ctx context.Context, accountIDs []string) (types.Map, int, string) {
+	var accountIDsInt64 []int64
+	for _, id := range accountIDs {
+		accountID, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return types.Map{}, 400, fmt.Sprintf("Invalid account ID format: %v", err)
+		}
+		accountIDsInt64 = append(accountIDsInt64, accountID)
+	}
+
+	params := map[string]interface{}{
+		"account_ids": accountIDsInt64,
+	}
+
+	body, err := raise_request(params, "/api/get_multiple_accounts_passwords", POST)
+	if err != nil {
+		return types.Map{}, 500, fmt.Sprintf("Error in API call: %v", err)
+	}
+
+	var response struct {
+		Passwords  map[string]string `json:"passwords"`
+		StatusCode int               `json:"status_code"`
+		Message    string            `json:"message"`
+		Error      struct {
+			Code    interface{} `json:"code"`
+			Message string      `json:"message"`
+		} `json:"error"`
+	}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return types.Map{}, 500, fmt.Sprintf("Failed to parse response: %v", err)
+	}
+
+	if response.StatusCode != 200 {
+		errorMessage := response.Message
+		if response.Error.Message != "" {
+			errorMessage = response.Error.Message
+		}
+		return types.Map{}, response.StatusCode, errorMessage
+	}
+
+	passwordsMap := make(map[string]attr.Value, len(response.Passwords))
+	for k, v := range response.Passwords {
+		passwordsMap[k] = types.StringValue(v)
+	}
+
+	passwords, diags := types.MapValue(types.StringType, passwordsMap)
+	if diags.HasError() {
+		return types.Map{}, 500, fmt.Sprintf("Error setting map value: %v", diags)
+	}
+
+	return passwords, response.StatusCode, "Success"
+}
+
 func add_account_function(ctx context.Context, params map[string]any) (AddAccountModel, int, string) {
 	var account AddAccountModel
-	body, err := raise_request(params, "/api/add_account", "POST")
+	body, err := raise_request(params, "/api/add_account", POST)
 	if err != nil {
 		return account, 500, fmt.Sprintf("Error in API call: %v", err)
 	}
@@ -447,7 +491,7 @@ func add_account_function(ctx context.Context, params map[string]any) (AddAccoun
 
 func delete_accounts_function(ctx context.Context, params map[string]any) (DeleteAccountsModel, int, string) {
 	var account DeleteAccountsModel
-	body, err := raise_request(params, "/api/delete_accounts", "DELETE")
+	body, err := raise_request(params, "/api/delete_accounts", DELETE)
 	if err != nil {
 		return account, 500, fmt.Sprintf("Error in API call: %v", err)
 	}
@@ -477,7 +521,7 @@ func delete_accounts_function(ctx context.Context, params map[string]any) (Delet
 
 func edit_account_function(ctx context.Context, params map[string]any) (EditAccountModel, int, string) {
 	var account EditAccountModel
-	body, err := raise_request(params, "/api/edit_account", "PUT")
+	body, err := raise_request(params, "/api/edit_account", PUT)
 	if err != nil {
 		return account, 500, fmt.Sprintf("Error in API call: %v", err)
 	}

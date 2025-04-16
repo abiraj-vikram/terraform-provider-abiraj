@@ -40,7 +40,7 @@ func (p *securdenProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 		Attributes: map[string]schema.Attribute{
 			"server_url": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "Securden Server URL. Example: https://example.securden.com:5959",
+				MarkdownDescription: "Securden Server URL. Example: https://company.securden.com:5959",
 			},
 			"authtoken": schema.StringAttribute{
 				Required:            true,
@@ -72,6 +72,10 @@ func (p *securdenProvider) Configure(ctx context.Context, req provider.Configure
 			resp.Diagnostics.AddError("Invalid Certificate", "The provided certificate is not valid or file not exists.")
 			return
 		}
+	}
+	if !isServerReachable(SecurdenServerURL) {
+		resp.Diagnostics.AddError("Server Unreachable", "The provided server URL is unreachable.")
+		return
 	}
 	SecurdenAuthToken = config.AuthToken.ValueString()
 	PluginVersion = p.version

@@ -34,30 +34,30 @@ func (d *DeleteAccounts) Metadata(ctx context.Context, req datasource.MetadataRe
 
 func (d *DeleteAccounts) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Securden data source",
+		MarkdownDescription: "Defines the structure for managing account deletions in Securden.",
 
 		Attributes: map[string]schema.Attribute{
 			"account_ids": schema.ListAttribute{
 				ElementType:         types.Int64Type,
-				MarkdownDescription: "Account IDs to be deleted",
+				MarkdownDescription: "List of account IDs to be deleted.",
 				Required:            true,
 			},
 			"reason": schema.StringAttribute{
-				MarkdownDescription: "Reason for the account deletetion",
+				MarkdownDescription: "Reason for deleting the accounts.",
 				Optional:            true,
 			},
 			"delete_permanently": schema.BoolAttribute{
-				MarkdownDescription: "Account will be deleted permanently",
+				MarkdownDescription: "Indicates whether the accounts should be permanently deleted (true/false).",
 				Optional:            true,
 			},
 			"message": schema.StringAttribute{
-				MarkdownDescription: "Response Message",
+				MarkdownDescription: "Response message indicating the result of the deletion operation.",
 				Computed:            true,
 			},
 			"deleted_accounts": schema.ListAttribute{
 				ElementType:         types.Int64Type,
+				MarkdownDescription: "List of account IDs that were successfully deleted.",
 				Computed:            true,
-				MarkdownDescription: "Deleted account IDs",
 			},
 		},
 	}
