@@ -84,7 +84,11 @@ func (d *Account) Configure(ctx context.Context, req datasource.ConfigureRequest
 func (d *Account) Create(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var account AccountModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &account)...)
-	account_id := account.AccountID.String()
+	var account_id int64
+	account_id = 0
+	if !account.AccountID.IsNull() {
+		account_id = account.AccountID.ValueInt64()
+	}
 	account_name := account.AccountName.ValueString()
 	account_title := account.AccountTitle.ValueString()
 	account_type := account.AccountType.ValueString()
@@ -102,7 +106,11 @@ func (d *Account) Create(ctx context.Context, req datasource.ReadRequest, resp *
 func (d *Account) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var account AccountModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &account)...)
-	account_id := account.AccountID.String()
+	var account_id int64
+	account_id = 0
+	if !account.AccountID.IsNull() {
+		account_id = account.AccountID.ValueInt64()
+	}
 	account_name := account.AccountName.ValueString()
 	account_title := account.AccountTitle.ValueString()
 	account_type := account.AccountType.ValueString()

@@ -200,6 +200,7 @@ func readPEMFile(filePath string) (*x509.Certificate, error) {
 }
 
 func raise_request(params map[string]any, apiURL string, method string) ([]byte, error) {
+	logger(params)
 	pattern := regexp.MustCompile("^https")
 	var client *http.Client
 	var err error
@@ -304,10 +305,12 @@ func raise_request(params map[string]any, apiURL string, method string) ([]byte,
 	return body, nil
 }
 
-func get_account(ctx context.Context, account_id, account_name, account_title, account_type string) (AccountModel, int, string) {
+func get_account(ctx context.Context, account_id int64, account_name, account_title, account_type string) (AccountModel, int, string) {
 	var account AccountModel
 	params := make(map[string]any)
-	setParam(params, "account_id", types.StringValue(account_id))
+	if account_id != 0 {
+		setParam(params, "account_id", types.Int64Value(account_id))
+	}
 	setParam(params, "account_name", types.StringValue(account_name))
 	setParam(params, "account_title", types.StringValue(account_title))
 	setParam(params, "account_type", types.StringValue(account_type))
