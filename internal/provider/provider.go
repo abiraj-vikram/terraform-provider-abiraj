@@ -74,7 +74,7 @@ func (p *securdenProvider) Configure(ctx context.Context, req provider.Configure
 		}
 	}
 	if !isServerReachable(SecurdenServerURL) {
-		resp.Diagnostics.AddError("Server Unreachable", "The provided server URL is unreachable.")
+		resp.Diagnostics.AddError("Server Unreachable", "The provided server URL is not reachable.")
 		return
 	}
 	SecurdenAuthToken = config.AuthToken.ValueString()

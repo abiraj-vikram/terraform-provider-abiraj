@@ -40,16 +40,12 @@ func logger(data interface{}) error {
 }
 
 func isServerReachable(serverURL string) bool {
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
-
+	client := createInsecureClient()
 	resp, err := client.Get(serverURL)
 	if err != nil {
 		return false
 	}
 	defer resp.Body.Close()
-
 	return resp.StatusCode < 400
 }
 
