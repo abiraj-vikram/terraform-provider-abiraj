@@ -53,7 +53,7 @@ func (d *AddAccount) Schema(ctx context.Context, req datasource.SchemaRequest, r
 			},
 			"account_name": schema.StringAttribute{
 				MarkdownDescription: "The name associated with the account.",
-				Required:            true,
+				Optional:            true,
 			},
 			"account_type": schema.StringAttribute{
 				MarkdownDescription: "Specifies the type or category of the account.",
